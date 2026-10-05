@@ -1,0 +1,21 @@
+import {chromium} from 'playwright';
+import fs from 'node:fs';
+const browser=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});
+const page=await browser.newPage({viewport:{width:1440,height:1000}});
+const errors=[];page.on('pageerror',e=>errors.push(e.message));
+const base='http://127.0.0.1:5173';
+const visit=async(path)=>{await page.goto(base+path);await page.locator('.loading-shell').waitFor({state:'hidden'});await page.waitForTimeout(120)};
+await visit('/');await page.screenshot({path:'qa-desktop.png',fullPage:false});
+await visit('/product/gulab-lehenga');await page.getByRole('button',{name:'Add to Bag',exact:true}).click();
+await visit('/cart');if(!await page.getByText('Gulab Hand-Embroidered Lehenga',{exact:true}).isVisible())throw Error('Cart persistence failed');
+await page.getByRole('button',{name:'Checkout',exact:true}).click();
+for(const [name,value] of Object.entries({name:'Test Customer',phone:'9876543210',address:'12 Garden Street',city:'Hyderabad',state:'Telangana',pincode:'500034'}))await page.locator(`input[name="${name}"]`).fill(value);
+await page.getByRole('button',{name:'Save Address',exact:true}).click();await page.getByRole('button',{name:'Continue to Payment'}).click();await page.getByLabel('Demo UPI ID').fill('test@demo');await page.getByRole('button',{name:/Simulate payment of/}).click();await page.getByRole('heading',{name:'Your order is confirmed.'}).waitFor();
+await page.getByRole('button',{name:'Track your order'}).click();const orderPath=new URL(page.url()).pathname;
+const routes=['/welcome','/splash','/login','/signup','/otp','/forgot-password',...['language','style','occasion','budget','result'].map(x=>'/onboarding/'+x),'/home','/collections','/ready-made','/search','/search/results','/search/filters','/discover','/designer/ananya','/designer/ananya/portfolio','/designer/ananya/reviews','/designer/ananya/packages','/wishlist','/create','/create/brief',...['occasion','outfit','inspiration','fabric','colors','details','budget','deadline','measurements','review','matching','quote','alteration'].map(x=>'/create/'+x),'/chat/ananya',...['','/moodboard','/materials','/versions','/approval'].map(x=>'/studio/ananya'+x),'/payment','/payment/failed','/payment/success','/orders',...['','/production','/quality','/alteration','/shipping','/delivered','/review'].map(x=>orderPath+x),...['','/edit','/measurements','/addresses','/payments','/reviews','/referrals','/inspiration','/inspiration/2','/moodboards'].map(x=>'/profile'+x),'/settings','/notifications','/notifications/settings','/help','/support','/report-problem','/size-guide','/body-scan','/permissions','/offline','/update','/our-story','/contact','/terms','/privacy','/shipping-policy','/return-policy'];
+const overflows=[];
+await page.setViewportSize({width:390,height:844});
+for(const route of routes){await visit(route);if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2))overflows.push(route);if(!await page.locator('main').innerText())throw Error('Empty page '+route)}
+await visit('/');await page.screenshot({path:'qa-mobile.png',fullPage:false});
+await visit('/settings');await page.getByRole('switch',{name:'Dark mode'}).check();await visit('/home');if(await page.locator('html').getAttribute('data-theme')!=='dark')throw Error('Dark mode did not persist');
+fs.writeFileSync('qa-results.json',JSON.stringify({routesChecked:routes.length,errors,overflows,checkout:'passed',persistence:'passed',darkMode:'passed'},null,2));console.log(JSON.stringify({routesChecked:routes.length,errors,overflows}));await browser.close();
