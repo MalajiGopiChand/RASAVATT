@@ -25,3 +25,5 @@ scripts/qa-desktop-journeys.mjs checks all 80 screens at desktop and mobile widt
 Catalogue, quotes and order milestones are demonstrations. Payments are explicitly simulated. Designer chat, courier tracking, AI body measurements, OTP and external social sign-in require production providers before commercial use. User reviews and workspaces persist; catalogue ratings are illustrative.
 
 The Site preserves its existing owner-only access policy.
+
+Vercel: vercel.json selects Next.js and build:vercel (next build --webpack). Vercel runs a browser-storage demonstration without the Sites dispatcher, D1 or R2. Cloudflare/Sites builds continue to use npm run build. Vercel must not trust visitor-supplied Sites identity headers.
