@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./desktop.css";
 
 export const metadata: Metadata = {
   title: "RASAVATT | Dream it. Design it. Wear it.",

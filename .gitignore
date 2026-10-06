@@ -48,3 +48,4 @@ next-env.d.ts
 /qa-*.png
 /qa-results.json
 *.tsbuildinfo
+/qa-*-results.json
